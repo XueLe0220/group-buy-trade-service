@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.14</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>cn.xuele</groupId>
+    <artifactId>group-buy-trade-service</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>group-buy-trade-api</module>
+        <module>group-buy-trade-domain</module>
+        <module>group-buy-trade-infrastructure</module>
+        <module>group-buy-trade-trigger</module>
+        <module>group-buy-trade-app</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <mybatis-spring-boot.version>3.0.4</mybatis-spring-boot.version>
+        <mysql.version>8.2.0</mysql.version>
+        <redisson.version>3.45.1</redisson.version>
+        <dubbo.version>3.3.0</dubbo.version>
+        <nacos-config.version>2023.0.3.2</nacos-config.version>
+        <group-buy-common.version>1.0-SNAPSHOT</group-buy-common.version>
+        <group-buy-activity-service.version>1.0-SNAPSHOT</group-buy-activity-service.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis-spring-boot.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
+                <version>${mysql.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-nacos-spring-boot-starter</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-alibaba-nacos-config</artifactId>
+                <version>${nacos-config.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.xuele</groupId>
+                <artifactId>group-buy-common-types</artifactId>
+                <version>${group-buy-common.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.xuele</groupId>
+                <artifactId>group-buy-common-design</artifactId>
+                <version>${group-buy-common.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.xuele</groupId>
+                <artifactId>group-buy-activity-api</artifactId>
+                <version>${group-buy-activity-service.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.xuele</groupId>
+                <artifactId>group-buy-trade-api</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.xuele</groupId>
+                <artifactId>group-buy-trade-domain</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.xuele</groupId>
+                <artifactId>group-buy-trade-infrastructure</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.xuele</groupId>
+                <artifactId>group-buy-trade-trigger</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

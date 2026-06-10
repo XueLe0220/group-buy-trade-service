@@ -1,0 +1,25 @@
+server:
+  port: 8093
+
+spring:
+  datasource:
+    username: trade_user
+    password: trade_password_123456
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/group_buy_trade?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=UTC&useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath:/mybatis/mapper/*.xml
+  config-location: classpath:/mybatis/config/mybatis-config.xml
+
+dubbo:
+  application:
+    name: group-buy-trade-service
+    logger: slf4j
+  protocol:
+    name: dubbo
+    port: ${DUBBO_PROTOCOL_PORT:20893}
+  registry:
+    address: nacos://${NACOS_HOST:127.0.0.1}:${NACOS_PORT:8848}
+  scan:
+    base-packages: cn.xuele.trade.trigger.rpc
