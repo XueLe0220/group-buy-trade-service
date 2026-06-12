@@ -30,6 +30,9 @@ public class LockTradeOrderRequestDTO implements Serializable {
     /** 拼团队伍ID，为空表示开新团。 */
     private String teamId;
 
+    /** 用户期望参与的活动ID；仅作为试算候选条件，最终活动快照以 activity-service 返回为准。 */
+    private Long activityId;
+
     /** 商品ID。 */
     private String goodsId;
 

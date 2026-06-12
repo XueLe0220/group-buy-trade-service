@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 交易结算请求。
+ * 支付成功结算请求。
  *
  * @author XueLe
  * @version 1.0.0
@@ -38,12 +38,12 @@ public class SettlementTradeOrderRequestDTO implements Serializable {
     /** 外部交易单号。 */
     private String outTradeNo;
 
-    /** 支付渠道流水号。 */
-    private String payTradeNo;
+    /** 支付系统流水号。 */
+    private String payNo;
 
     /** 实付金额。 */
     private BigDecimal payAmount;
 
     /** 支付完成时间。 */
-    private LocalDateTime outTradeTime;
+    private LocalDateTime payTime;
 }
