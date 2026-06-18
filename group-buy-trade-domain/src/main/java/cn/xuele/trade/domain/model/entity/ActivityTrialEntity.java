@@ -41,6 +41,9 @@ public class ActivityTrialEntity {
     /** 拼团有效时间，单位分钟 */
     private Integer validTime;
 
+    /** 单人参与次数限制 */
+    private Integer takeLimitCount;
+
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 

@@ -1,0 +1,23 @@
+package cn.xuele.trade.infrastructure.dao;
+
+import cn.xuele.trade.infrastructure.dao.po.GroupBuyOrderList;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+/**
+ * 用户交易订单 DAO。
+ *
+ * @author XueLe
+ * @version 1.0.0
+ * @since 2026/06/18
+ */
+@Mapper
+public interface IGroupBuyOrderListDao {
+
+    int insert(GroupBuyOrderList groupBuyOrderList);
+
+    GroupBuyOrderList queryByUserIdAndOutTradeNo(@Param("userId") String userId, @Param("outTradeNo") String outTradeNo);
+
+    Integer queryUserOrderCount(@Param("activityId") Long activityId, @Param("userId") String userId);
+
+}

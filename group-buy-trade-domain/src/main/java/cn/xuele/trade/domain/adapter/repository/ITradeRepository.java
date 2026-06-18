@@ -1,6 +1,7 @@
 package cn.xuele.trade.domain.adapter.repository;
 
 import cn.xuele.trade.domain.model.aggregate.GroupBuyLockAggregate;
+import cn.xuele.trade.domain.model.entity.GroupBuyTeamEntity;
 import cn.xuele.trade.domain.model.entity.TradeOrderEntity;
 
 /**
@@ -12,6 +13,23 @@ import cn.xuele.trade.domain.model.entity.TradeOrderEntity;
  * @since 2026/06/12 16:04
  */
 public interface ITradeRepository {
+
+    /**
+     * 根据用户和外部交易单号查询已有交易单。
+     * 用于锁单入口幂等判断，存在则直接返回原锁单结果。
+     */
+    TradeOrderEntity queryOrderByUserIdAndOutTradeNo(String userId, String outTradeNo);
+
+    /**
+     * 查询用户在指定活动下已占用限购次数的订单数。
+     * 统计待支付和已支付订单，已关闭订单不占用限购名额。
+     */
+    Integer queryUserOrderCount(Long activityId, String userId);
+
+    /**
+     * 查询拼团队伍。
+     */
+    GroupBuyTeamEntity queryTeamByTeamId(String teamId);
 
     /**
      * 锁单落库。

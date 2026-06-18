@@ -31,4 +31,7 @@ public class GroupBuyLockAggregate {
 
     /** 本次锁单要创建的用户待支付订单 */
     private TradeOrderEntity order;
+
+    /** 本次活动的单人限购次数，用于仓储事务内二次校验。 */
+    private Integer takeLimitCount;
 }
