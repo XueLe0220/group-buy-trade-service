@@ -29,7 +29,7 @@ public class GroupBuyOrder {
     private String channel;
     private BigDecimal originalPrice;
     private BigDecimal deductionPrice;
-    private BigDecimal payPrice;
+    private BigDecimal payableAmount;
     private Integer targetCount;
     private Integer lockCount;
     private Integer completeCount;

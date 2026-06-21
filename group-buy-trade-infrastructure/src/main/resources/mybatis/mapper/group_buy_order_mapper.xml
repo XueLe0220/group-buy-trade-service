@@ -11,7 +11,7 @@
         <result column="channel" property="channel"/>
         <result column="original_price" property="originalPrice"/>
         <result column="deduction_price" property="deductionPrice"/>
-        <result column="pay_price" property="payPrice"/>
+        <result column="payable_amount" property="payableAmount"/>
         <result column="target_count" property="targetCount"/>
         <result column="lock_count" property="lockCount"/>
         <result column="complete_count" property="completeCount"/>
@@ -27,12 +27,12 @@
 
     <insert id="insert" parameterType="cn.xuele.trade.infrastructure.dao.po.GroupBuyOrder">
         insert into group_buy_order(team_id, activity_id, activity_name, source, channel,
-                                    original_price, deduction_price, pay_price, target_count,
+                                    original_price, deduction_price, payable_amount, target_count,
                                     lock_count, complete_count, status, valid_start_time,
                                     valid_end_time, notify_type, notify_mq, notify_url,
                                     create_time, update_time)
         values (#{teamId}, #{activityId}, #{activityName}, #{source}, #{channel},
-                #{originalPrice}, #{deductionPrice}, #{payPrice}, #{targetCount},
+                #{originalPrice}, #{deductionPrice}, #{payableAmount}, #{targetCount},
                 #{lockCount}, #{completeCount}, #{status}, #{validStartTime},
                 #{validEndTime}, #{notifyType}, #{notifyMQ}, #{notifyUrl},
                 now(), now())
@@ -48,13 +48,71 @@
           and valid_end_time &gt; now()
     </update>
 
+    <update id="updateAddCompleteCount" parameterType="java.lang.String">
+        update group_buy_order
+        set complete_count = complete_count + 1,
+            update_time = now()
+        where team_id = #{teamId}
+          and status = 0
+          and complete_count &lt; target_count
+    </update>
+
+    <update id="updateTeamStatusComplete" parameterType="java.lang.String">
+        update group_buy_order
+        set status = 1,
+            update_time = now()
+        where team_id = #{teamId}
+          and status = 0
+          and complete_count &gt;= target_count
+    </update>
+
+    <update id="updateUnpaidRefund">
+        update group_buy_order
+        set lock_count = lock_count - 1,
+            update_time = now()
+        where team_id = #{teamId}
+          and status = 0
+          and lock_count &gt; 0
+    </update>
+
+    <update id="updatePaidUnformedRefund">
+        update group_buy_order
+        set lock_count = lock_count - 1,
+            complete_count = complete_count - 1,
+            update_time = now()
+        where team_id = #{teamId}
+          and status = 0
+          and lock_count &gt; 0
+          and complete_count &gt; 0
+    </update>
+
+    <update id="updatePaidFormedRefund">
+        update group_buy_order
+        set complete_count = complete_count - 1,
+            status = #{status},
+            update_time = now()
+        where team_id = #{teamId}
+          and status in (1, 3)
+          and complete_count &gt; 0
+    </update>
+
     <select id="queryByTeamId" parameterType="java.lang.String" resultMap="dataMap">
         select id, team_id, activity_id, activity_name, source, channel, original_price,
-               deduction_price, pay_price, target_count, lock_count, complete_count,
+               deduction_price, payable_amount, target_count, lock_count, complete_count,
                status, valid_start_time, valid_end_time, notify_type, notify_mq,
                notify_url, create_time, update_time
         from group_buy_order
         where team_id = #{teamId}
+    </select>
+
+    <select id="queryByTeamIdForUpdate" parameterType="java.lang.String" resultMap="dataMap">
+        select id, team_id, activity_id, activity_name, source, channel, original_price,
+               deduction_price, payable_amount, target_count, lock_count, complete_count,
+               status, valid_start_time, valid_end_time, notify_type, notify_mq,
+               notify_url, create_time, update_time
+        from group_buy_order
+        where team_id = #{teamId}
+        for update
     </select>
 
 </mapper>

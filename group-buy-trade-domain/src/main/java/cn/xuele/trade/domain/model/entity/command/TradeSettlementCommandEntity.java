@@ -39,7 +39,7 @@ public class TradeSettlementCommandEntity {
     private String payNo;
 
     /** 实际支付金额；支付成功后由外部支付系统返回，必须与订单应付金额校验 */
-    private BigDecimal payAmount;
+    private BigDecimal paidAmount;
 
     /** 支付成功时间；支付成功后由外部支付系统返回 */
     private LocalDateTime payTime;

@@ -33,12 +33,14 @@ public class GroupBuyOrderList {
     private String channel;
     private BigDecimal originalPrice;
     private BigDecimal deductionPrice;
-    private BigDecimal payPrice;
+    private BigDecimal payableAmount;
     private Integer status;
     private String outTradeNo;
     private String bizId;
+    private String paymentRequestNo;
+    private LocalDateTime paymentRequestTime;
     private String payNo;
-    private BigDecimal payAmount;
+    private BigDecimal paidAmount;
     private LocalDateTime payTime;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

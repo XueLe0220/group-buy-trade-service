@@ -3,6 +3,8 @@ package cn.xuele.trade.api;
 import cn.xuele.common.types.response.Response;
 import cn.xuele.trade.api.dto.LockTradeOrderRequestDTO;
 import cn.xuele.trade.api.dto.LockTradeOrderResponseDTO;
+import cn.xuele.trade.api.dto.PrepareTradePayOrderRequestDTO;
+import cn.xuele.trade.api.dto.PrepareTradePayOrderResponseDTO;
 import cn.xuele.trade.api.dto.RefundTradeOrderRequestDTO;
 import cn.xuele.trade.api.dto.RefundTradeOrderResponseDTO;
 import cn.xuele.trade.api.dto.SettlementTradeOrderRequestDTO;
@@ -24,6 +26,14 @@ public interface ITradeOrderService {
      * @return 锁单结果
      */
     Response<LockTradeOrderResponseDTO> lockTradeOrder(LockTradeOrderRequestDTO request);
+
+    /**
+     * 发起支付准备。
+     *
+     * @param request 发起支付准备请求
+     * @return 发起支付准备结果
+     */
+    Response<PrepareTradePayOrderResponseDTO> prepareTradePayOrder(PrepareTradePayOrderRequestDTO request);
 
     /**
      * 结算交易订单。

@@ -6,17 +6,28 @@ import cn.xuele.common.types.response.Response;
 import cn.xuele.trade.api.ITradeOrderService;
 import cn.xuele.trade.api.dto.LockTradeOrderRequestDTO;
 import cn.xuele.trade.api.dto.LockTradeOrderResponseDTO;
+import cn.xuele.trade.api.dto.PrepareTradePayOrderRequestDTO;
+import cn.xuele.trade.api.dto.PrepareTradePayOrderResponseDTO;
 import cn.xuele.trade.api.dto.RefundTradeOrderRequestDTO;
 import cn.xuele.trade.api.dto.RefundTradeOrderResponseDTO;
 import cn.xuele.trade.api.dto.SettlementTradeOrderRequestDTO;
 import cn.xuele.trade.api.dto.SettlementTradeOrderResponseDTO;
 import cn.xuele.trade.domain.model.entity.TradeOrderEntity;
+import cn.xuele.trade.domain.model.entity.TradePayOrderResultEntity;
+import cn.xuele.trade.domain.model.entity.TradeRefundResultEntity;
+import cn.xuele.trade.domain.model.entity.TradeSettlementResultEntity;
 import cn.xuele.trade.domain.service.ITradeLockOrderService;
+import cn.xuele.trade.domain.service.ITradePayOrderService;
+import cn.xuele.trade.domain.service.ITradeRefundOrderService;
+import cn.xuele.trade.domain.service.ITradeSettlementOrderService;
 import org.apache.dubbo.config.annotation.DubboService;
 
 import static cn.xuele.trade.trigger.Support.toCommand;
 import static cn.xuele.trade.trigger.Support.toResponse;
 import static cn.xuele.trade.trigger.Support.validateLockRequest;
+import static cn.xuele.trade.trigger.Support.validatePreparePayRequest;
+import static cn.xuele.trade.trigger.Support.validateRefundRequest;
+import static cn.xuele.trade.trigger.Support.validateSettlementRequest;
 
 /**
  * 交易订单 Dubbo Provider。
@@ -29,9 +40,18 @@ import static cn.xuele.trade.trigger.Support.validateLockRequest;
 public class TradeOrderProvider implements ITradeOrderService {
 
     private final ITradeLockOrderService tradeLockOrderService;
+    private final ITradePayOrderService tradePayOrderService;
+    private final ITradeSettlementOrderService tradeSettlementOrderService;
+    private final ITradeRefundOrderService tradeRefundOrderService;
 
-    public TradeOrderProvider(ITradeLockOrderService tradeLockOrderService) {
+    public TradeOrderProvider(ITradeLockOrderService tradeLockOrderService,
+                              ITradePayOrderService tradePayOrderService,
+                              ITradeSettlementOrderService tradeSettlementOrderService,
+                              ITradeRefundOrderService tradeRefundOrderService) {
         this.tradeLockOrderService = tradeLockOrderService;
+        this.tradePayOrderService = tradePayOrderService;
+        this.tradeSettlementOrderService = tradeSettlementOrderService;
+        this.tradeRefundOrderService = tradeRefundOrderService;
     }
 
     @Override
@@ -49,11 +69,40 @@ public class TradeOrderProvider implements ITradeOrderService {
 
     @Override
     public Response<SettlementTradeOrderResponseDTO> settlementTradeOrder(SettlementTradeOrderRequestDTO request) {
-        return Response.failure(ResponseCode.UN_ERROR.getCode(), "结算链路尚未在阶段5锁单闭环中实现");
+        try {
+            validateSettlementRequest(request);
+            TradeSettlementResultEntity result = tradeSettlementOrderService.settlementTradeOrder(toCommand(request));
+            return Response.success(toResponse(result));
+        } catch (AppException e) {
+            return Response.failure(e.getCode(), e.getInfo());
+        } catch (Exception e) {
+            return Response.failure(ResponseCode.UN_ERROR);
+        }
+    }
+
+    @Override
+    public Response<PrepareTradePayOrderResponseDTO> prepareTradePayOrder(PrepareTradePayOrderRequestDTO request) {
+        try {
+            validatePreparePayRequest(request);
+            TradePayOrderResultEntity result = tradePayOrderService.prepareTradePayOrder(toCommand(request));
+            return Response.success(toResponse(result));
+        } catch (AppException e) {
+            return Response.failure(e.getCode(), e.getInfo());
+        } catch (Exception e) {
+            return Response.failure(ResponseCode.UN_ERROR);
+        }
     }
 
     @Override
     public Response<RefundTradeOrderResponseDTO> refundTradeOrder(RefundTradeOrderRequestDTO request) {
-        return Response.failure(ResponseCode.UN_ERROR.getCode(), "退款链路尚未在阶段5锁单闭环中实现");
+        try {
+            validateRefundRequest(request);
+            TradeRefundResultEntity result = tradeRefundOrderService.refundTradeOrder(toCommand(request));
+            return Response.success(toResponse(result));
+        } catch (AppException e) {
+            return Response.failure(e.getCode(), e.getInfo());
+        } catch (Exception e) {
+            return Response.failure(ResponseCode.UN_ERROR);
+        }
     }
 }

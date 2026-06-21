@@ -51,14 +51,17 @@ public class TradeOrderEntity {
     /** 价格快照 */
     private BigDecimal originalPrice;
     private BigDecimal deductionPrice;
-    private BigDecimal payPrice;
+    private BigDecimal payableAmount;
 
     /** 支付信息 */
+    /** 发起支付请求号；用于后续对接 payment-service 创建支付单 */
+    private String paymentRequestNo;
+    private LocalDateTime paymentRequestTime;
     private LocalDateTime payTime;
     /** 支付系统流水号；用于防止支付回调串单或重复流水异常 */
     private String payNo;
     /** 实际支付金额；支付回调金额必须与订单应付金额校验 */
-    private BigDecimal payAmount;
+    private BigDecimal paidAmount;
 
     /** 订单状态 */
     private TradeOrderStatusEnumVO status;

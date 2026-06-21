@@ -18,6 +18,18 @@ public interface IGroupBuyOrderDao {
 
     int updateAddLockCount(@Param("teamId") String teamId);
 
+    int updateAddCompleteCount(@Param("teamId") String teamId);
+
+    int updateTeamStatusComplete(@Param("teamId") String teamId);
+
+    int updateUnpaidRefund(@Param("teamId") String teamId);
+
+    int updatePaidUnformedRefund(@Param("teamId") String teamId);
+
+    int updatePaidFormedRefund(@Param("teamId") String teamId, @Param("status") Integer status);
+
     GroupBuyOrder queryByTeamId(@Param("teamId") String teamId);
+
+    GroupBuyOrder queryByTeamIdForUpdate(@Param("teamId") String teamId);
 
 }

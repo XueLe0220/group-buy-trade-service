@@ -83,7 +83,7 @@ public class LockBuildRuleFilter implements ILogicHandler<TradeLockCommandEntity
                 .goodsName(activityTrial.getGoodsName())
                 .originalPrice(activityTrial.getOriginalPrice())
                 .deductionPrice(activityTrial.getDeductionPrice())
-                .payPrice(activityTrial.getPayPrice())
+                .payableAmount(activityTrial.getPayableAmount())
                 .status(TradeOrderStatusEnumVO.CREATE)
                 .createTime(now)
                 .updateTime(now)

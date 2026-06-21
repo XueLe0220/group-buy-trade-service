@@ -15,12 +15,14 @@
         <result column="channel" property="channel"/>
         <result column="original_price" property="originalPrice"/>
         <result column="deduction_price" property="deductionPrice"/>
-        <result column="pay_price" property="payPrice"/>
+        <result column="payable_amount" property="payableAmount"/>
         <result column="status" property="status"/>
         <result column="out_trade_no" property="outTradeNo"/>
         <result column="biz_id" property="bizId"/>
+        <result column="payment_request_no" property="paymentRequestNo"/>
+        <result column="payment_request_time" property="paymentRequestTime"/>
         <result column="pay_no" property="payNo"/>
-        <result column="pay_amount" property="payAmount"/>
+        <result column="paid_amount" property="paidAmount"/>
         <result column="pay_time" property="payTime"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
@@ -29,22 +31,47 @@
     <insert id="insert" parameterType="cn.xuele.trade.infrastructure.dao.po.GroupBuyOrderList">
         insert into group_buy_order_list(user_id, team_id, order_id, activity_id, activity_name,
                                          goods_id, goods_name, source, channel, original_price,
-                                         deduction_price, pay_price, status, out_trade_no,
-                                         biz_id, pay_no, pay_amount, pay_time, create_time, update_time)
+                                         deduction_price, payable_amount, status, out_trade_no,
+                                         biz_id, payment_request_no, payment_request_time,
+                                         pay_no, paid_amount, pay_time, create_time, update_time)
         values (#{userId}, #{teamId}, #{orderId}, #{activityId}, #{activityName},
                 #{goodsId}, #{goodsName}, #{source}, #{channel}, #{originalPrice},
-                #{deductionPrice}, #{payPrice}, #{status}, #{outTradeNo},
-                #{bizId}, #{payNo}, #{payAmount}, #{payTime}, now(), now())
+                #{deductionPrice}, #{payableAmount}, #{status}, #{outTradeNo},
+                #{bizId}, #{paymentRequestNo}, #{paymentRequestTime},
+                #{payNo}, #{paidAmount}, #{payTime}, now(), now())
     </insert>
 
     <select id="queryByUserIdAndOutTradeNo" resultMap="dataMap">
         select id, user_id, team_id, order_id, activity_id, activity_name, goods_id,
-               goods_name, source, channel, original_price, deduction_price, pay_price,
-               status, out_trade_no, biz_id, pay_no, pay_amount, pay_time,
+               goods_name, source, channel, original_price, deduction_price, payable_amount,
+               status, out_trade_no, biz_id, payment_request_no, payment_request_time,
+               pay_no, paid_amount, pay_time,
                create_time, update_time
         from group_buy_order_list
         where user_id = #{userId}
           and out_trade_no = #{outTradeNo}
+    </select>
+
+    <select id="queryByUserIdAndOutTradeNoForUpdate" resultMap="dataMap">
+        select id, user_id, team_id, order_id, activity_id, activity_name, goods_id,
+               goods_name, source, channel, original_price, deduction_price, payable_amount,
+               status, out_trade_no, biz_id, payment_request_no, payment_request_time,
+               pay_no, paid_amount, pay_time,
+               create_time, update_time
+        from group_buy_order_list
+        where user_id = #{userId}
+          and out_trade_no = #{outTradeNo}
+        for update
+    </select>
+
+    <select id="queryByPayNo" resultMap="dataMap">
+        select id, user_id, team_id, order_id, activity_id, activity_name, goods_id,
+               goods_name, source, channel, original_price, deduction_price, payable_amount,
+               status, out_trade_no, biz_id, payment_request_no, payment_request_time,
+               pay_no, paid_amount, pay_time,
+               create_time, update_time
+        from group_buy_order_list
+        where pay_no = #{payNo}
     </select>
 
     <select id="queryUserOrderCount" resultType="java.lang.Integer">
@@ -54,5 +81,37 @@
           and user_id = #{userId}
           and status in (0, 1)
     </select>
+
+    <update id="updatePaymentRequest" parameterType="cn.xuele.trade.infrastructure.dao.po.GroupBuyOrderList">
+        update group_buy_order_list
+        set payment_request_no = #{paymentRequestNo},
+            payment_request_time = #{paymentRequestTime},
+            update_time = now()
+        where user_id = #{userId}
+          and out_trade_no = #{outTradeNo}
+          and status = 0
+          and payment_request_no is null
+    </update>
+
+    <update id="updateOrderStatusComplete" parameterType="cn.xuele.trade.infrastructure.dao.po.GroupBuyOrderList">
+        update group_buy_order_list
+        set status = 1,
+            pay_no = #{payNo},
+            paid_amount = #{paidAmount},
+            pay_time = #{payTime},
+            update_time = now()
+        where user_id = #{userId}
+          and out_trade_no = #{outTradeNo}
+          and status = 0
+    </update>
+
+    <update id="updateOrderStatusClose" parameterType="cn.xuele.trade.infrastructure.dao.po.GroupBuyOrderList">
+        update group_buy_order_list
+        set status = 2,
+            update_time = now()
+        where user_id = #{userId}
+          and out_trade_no = #{outTradeNo}
+          and status = #{status}
+    </update>
 
 </mapper>

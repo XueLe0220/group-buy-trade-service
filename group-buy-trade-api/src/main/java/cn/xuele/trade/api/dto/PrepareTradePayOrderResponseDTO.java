@@ -8,22 +8,26 @@ import lombok.NoArgsConstructor;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
- * 交易锁单响应。
+ * 发起支付准备响应。
  *
  * @author XueLe
  * @version 1.0.0
- * @since 2026/06/10
+ * @since 2026/06/21
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LockTradeOrderResponseDTO implements Serializable {
+public class PrepareTradePayOrderResponseDTO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+
+    /** 用户ID。 */
+    private String userId;
 
     /** 内部订单ID。 */
     private String orderId;
@@ -31,15 +35,21 @@ public class LockTradeOrderResponseDTO implements Serializable {
     /** 拼团队伍ID。 */
     private String teamId;
 
-    /** 原价快照。 */
-    private BigDecimal originalPrice;
+    /** 外部交易单号。 */
+    private String outTradeNo;
 
-    /** 优惠金额快照。 */
-    private BigDecimal deductionPrice;
+    /** 本次支付请求号。 */
+    private String paymentRequestNo;
 
-    /** 应付金额快照。 */
+    /** 应付金额。 */
     private BigDecimal payableAmount;
+
+    /** 支付有效期。 */
+    private LocalDateTime payExpireTime;
 
     /** 交易订单状态。 */
     private Integer tradeOrderStatus;
+
+    /** 拼团队伍状态。 */
+    private Integer teamStatus;
 }

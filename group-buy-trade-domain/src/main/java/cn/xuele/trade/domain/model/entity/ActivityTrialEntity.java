@@ -33,7 +33,7 @@ public class ActivityTrialEntity {
 
     private BigDecimal originalPrice;
     private BigDecimal deductionPrice;
-    private BigDecimal payPrice;
+    private BigDecimal payableAmount;
 
     /** 成团目标人数 */
     private Integer targetCount;

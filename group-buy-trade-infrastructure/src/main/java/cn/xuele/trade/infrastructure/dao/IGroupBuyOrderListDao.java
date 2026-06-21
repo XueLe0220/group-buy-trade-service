@@ -18,6 +18,16 @@ public interface IGroupBuyOrderListDao {
 
     GroupBuyOrderList queryByUserIdAndOutTradeNo(@Param("userId") String userId, @Param("outTradeNo") String outTradeNo);
 
+    GroupBuyOrderList queryByUserIdAndOutTradeNoForUpdate(@Param("userId") String userId, @Param("outTradeNo") String outTradeNo);
+
+    GroupBuyOrderList queryByPayNo(@Param("payNo") String payNo);
+
     Integer queryUserOrderCount(@Param("activityId") Long activityId, @Param("userId") String userId);
+
+    int updatePaymentRequest(GroupBuyOrderList groupBuyOrderList);
+
+    int updateOrderStatusComplete(GroupBuyOrderList groupBuyOrderList);
+
+    int updateOrderStatusClose(GroupBuyOrderList groupBuyOrderList);
 
 }

@@ -55,7 +55,7 @@ public class ActivityTrialPort implements IActivityTrialPort {
                 .goodsName(data.getGoodsName())
                 .originalPrice(data.getOriginalPrice())
                 .deductionPrice(data.getDeductionPrice())
-                .payPrice(data.getPayPrice())
+                .payableAmount(data.getPayableAmount())
                 .targetCount(data.getTargetCount())
                 .validTime(data.getValidTime())
                 .takeLimitCount(data.getTakeLimitCount())
