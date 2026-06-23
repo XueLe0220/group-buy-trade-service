@@ -40,6 +40,8 @@ public class LockBuildRuleFilter implements ILogicHandler<TradeLockCommandEntity
                 .team(team)
                 .order(order)
                 .takeLimitCount(activityTrial.getTakeLimitCount())
+                .teamStockRecoveryBizId(dynamicContext.getTeamStockRecoveryBizId())
+                .teamStockReserved(dynamicContext.isTeamStockReserved())
                 .build();
 
         dynamicContext.setLockAggregate(aggregate);

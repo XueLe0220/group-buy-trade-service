@@ -34,4 +34,10 @@ public class GroupBuyLockAggregate {
 
     /** 本次活动的单人限购次数，用于仓储事务内二次校验。 */
     private Integer takeLimitCount;
+
+    /** 本次是否完成 Redis 队伍名额预占。 */
+    private boolean teamStockReserved;
+
+    /** 本次 Redis 预占对应的恢复幂等号。 */
+    private String teamStockRecoveryBizId;
 }

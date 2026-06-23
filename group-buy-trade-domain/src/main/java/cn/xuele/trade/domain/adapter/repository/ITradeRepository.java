@@ -4,6 +4,7 @@ import cn.xuele.trade.domain.model.aggregate.GroupBuyLockAggregate;
 import cn.xuele.trade.domain.model.aggregate.GroupBuyRefundAggregate;
 import cn.xuele.trade.domain.model.aggregate.GroupBuySettlementAggregate;
 import cn.xuele.trade.domain.model.entity.GroupBuyTeamEntity;
+import cn.xuele.trade.domain.model.entity.TradeLockOrderResultEntity;
 import cn.xuele.trade.domain.model.entity.TradeOrderEntity;
 import cn.xuele.trade.domain.model.entity.TradePayOrderResultEntity;
 import cn.xuele.trade.domain.model.entity.TradeRefundResultEntity;
@@ -48,7 +49,7 @@ public interface ITradeRepository {
      * 新团：创建队伍 + 创建个人订单。
      * 参团：更新队伍 lockCount + 创建个人订单。
      */
-    TradeOrderEntity lockOrder(GroupBuyLockAggregate aggregate);
+    TradeLockOrderResultEntity lockOrder(GroupBuyLockAggregate aggregate);
 
     /**
      * 发起支付准备。

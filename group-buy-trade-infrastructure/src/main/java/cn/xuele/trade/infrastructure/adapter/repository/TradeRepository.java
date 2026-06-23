@@ -7,6 +7,7 @@ import cn.xuele.trade.domain.model.aggregate.GroupBuyLockAggregate;
 import cn.xuele.trade.domain.model.aggregate.GroupBuyRefundAggregate;
 import cn.xuele.trade.domain.model.aggregate.GroupBuySettlementAggregate;
 import cn.xuele.trade.domain.model.entity.GroupBuyTeamEntity;
+import cn.xuele.trade.domain.model.entity.TradeLockOrderResultEntity;
 import cn.xuele.trade.domain.model.entity.TradeOrderEntity;
 import cn.xuele.trade.domain.model.entity.TradePayOrderResultEntity;
 import cn.xuele.trade.domain.model.entity.TradeRefundResultEntity;
@@ -74,12 +75,15 @@ public class TradeRepository implements ITradeRepository {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public TradeOrderEntity lockOrder(GroupBuyLockAggregate aggregate) {
+    public TradeLockOrderResultEntity lockOrder(GroupBuyLockAggregate aggregate) {
         TradeOrderEntity order = aggregate.getOrder();
 
         TradeOrderEntity existOrder = queryOrderByUserIdAndOutTradeNo(order.getUserId(), order.getOutTradeNo());
         if (existOrder != null) {
-            return existOrder;
+            return TradeLockOrderResultEntity.builder()
+                    .order(existOrder)
+                    .idempotentHit(true)
+                    .build();
         }
 
         Integer userOrderCount = queryUserOrderCount(order.getActivityId(), order.getUserId());
@@ -103,11 +107,14 @@ public class TradeRepository implements ITradeRepository {
 
         try {
             groupBuyOrderListDao.insert(toGroupBuyOrderList(order));
-            return order;
+            return TradeLockOrderResultEntity.builder()
+                    .order(order)
+                    .created(true)
+                    .build();
         } catch (DuplicateKeyException e) {
             TradeOrderEntity duplicateOrder = queryOrderByUserIdAndOutTradeNo(order.getUserId(), order.getOutTradeNo());
             if (duplicateOrder != null) {
-                return duplicateOrder;
+                throw new AppException(ResponseCode.INDEX_EXCEPTION.getCode(), ResponseCode.INDEX_EXCEPTION.getInfo(), e);
             }
             Integer currentUserOrderCount = queryUserOrderCount(order.getActivityId(), order.getUserId());
             if (aggregate.getTakeLimitCount() != null
@@ -116,7 +123,7 @@ public class TradeRepository implements ITradeRepository {
                     && currentUserOrderCount >= aggregate.getTakeLimitCount()) {
                 throw new AppException(ResponseCode.TRADE_TAKE_LIMIT);
             }
-            throw new AppException(ResponseCode.INDEX_EXCEPTION);
+            throw new AppException(ResponseCode.INDEX_EXCEPTION.getCode(), ResponseCode.INDEX_EXCEPTION.getInfo(), e);
         }
     }
 

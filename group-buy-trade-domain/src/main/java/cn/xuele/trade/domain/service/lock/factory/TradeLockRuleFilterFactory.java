@@ -11,6 +11,7 @@ import cn.xuele.trade.domain.service.lock.filter.ActivityTrialRuleFilter;
 import cn.xuele.trade.domain.service.lock.filter.LockBuildRuleFilter;
 import cn.xuele.trade.domain.service.lock.filter.LockIdempotentRuleFilter;
 import cn.xuele.trade.domain.service.lock.filter.TeamAvailableRuleFilter;
+import cn.xuele.trade.domain.service.lock.filter.TeamStockReserveRuleFilter;
 import cn.xuele.trade.domain.service.lock.filter.UserTakeLimitRuleFilter;
 import lombok.Data;
 
@@ -28,6 +29,7 @@ public class TradeLockRuleFilterFactory {
             ActivityTrialRuleFilter activityTrialRuleFilter,
             UserTakeLimitRuleFilter userTakeLimitRuleFilter,
             TeamAvailableRuleFilter teamAvailableRuleFilter,
+            TeamStockReserveRuleFilter teamStockReserveRuleFilter,
             LockBuildRuleFilter lockBuildRuleFilter) {
 
         LinkArmory<TradeLockCommandEntity, DynamicContext, TradeLockResultEntity> linkArmory =
@@ -36,6 +38,7 @@ public class TradeLockRuleFilterFactory {
                         activityTrialRuleFilter,
                         userTakeLimitRuleFilter,
                         teamAvailableRuleFilter,
+                        teamStockReserveRuleFilter,
                         lockBuildRuleFilter);
 
         return linkArmory.getLogicLink();
@@ -55,6 +58,12 @@ public class TradeLockRuleFilterFactory {
 
         /** 最终要落库的锁单聚合。 */
         private GroupBuyLockAggregate lockAggregate;
+
+        /** 本次是否完成 Redis 队伍名额预占。 */
+        private boolean teamStockReserved;
+
+        /** 本次 Redis 预占对应的恢复幂等号。 */
+        private String teamStockRecoveryBizId;
 
     }
 }
