@@ -211,7 +211,8 @@ public class DomainServiceConfig {
     @Bean
     public ITradeRefundOrderService tradeRefundOrderService(
             ITradeRepository tradeRepository,
+            ITeamStockReservationPort teamStockReservationPort,
             BusinessLinkedList<TradeRefundCommandEntity, TradeRefundRuleFilterFactory.DynamicContext, TradeRefundResultEntity> tradeRefundRuleFilter) {
-        return new TradeRefundOrderService(tradeRepository, tradeRefundRuleFilter);
+        return new TradeRefundOrderService(tradeRepository, teamStockReservationPort, tradeRefundRuleFilter);
     }
 }

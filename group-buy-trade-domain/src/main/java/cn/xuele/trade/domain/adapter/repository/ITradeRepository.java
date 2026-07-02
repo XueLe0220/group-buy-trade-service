@@ -60,6 +60,7 @@ public interface ITradeRepository {
     /**
      * 支付结算落库。
      * 在本地事务内完成个人订单支付信息写入、订单状态推进、队伍完成数推进和撞线成团。
+     * 首次撞线成团时，需要在同一事务边界内记录交易事实事件。
      */
     TradeSettlementResultEntity settlementOrder(GroupBuySettlementAggregate aggregate);
 

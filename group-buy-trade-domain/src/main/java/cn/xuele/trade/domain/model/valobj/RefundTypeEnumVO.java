@@ -18,7 +18,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum RefundTypeEnumVO {
 
-    UNPAID_UNLOCK("unpaid_unlock", "未支付退单，释放锁单名额"),
+    UNPAID("unpaid", "未支付退单，释放锁单名额"),
 
     PAID_UNFORMED("paid_unformed", "已支付未成团退款，回退锁单数和完成数"),
 
@@ -38,7 +38,7 @@ public enum RefundTypeEnumVO {
 
     public boolean matches(GroupBuyTeamStatusEnumVO teamStatus, TradeOrderStatusEnumVO orderStatus) {
         return switch (this) {
-            case UNPAID_UNLOCK -> GroupBuyTeamStatusEnumVO.PROGRESS.equals(teamStatus)
+            case UNPAID -> GroupBuyTeamStatusEnumVO.PROGRESS.equals(teamStatus)
                     && TradeOrderStatusEnumVO.CREATE.equals(orderStatus);
             case PAID_UNFORMED -> GroupBuyTeamStatusEnumVO.PROGRESS.equals(teamStatus)
                     && TradeOrderStatusEnumVO.COMPLETE.equals(orderStatus);

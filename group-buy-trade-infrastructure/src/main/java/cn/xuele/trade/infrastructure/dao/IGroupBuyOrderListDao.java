@@ -4,6 +4,8 @@ import cn.xuele.trade.infrastructure.dao.po.GroupBuyOrderList;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * 用户交易订单 DAO。
  *
@@ -21,6 +23,8 @@ public interface IGroupBuyOrderListDao {
     GroupBuyOrderList queryByUserIdAndOutTradeNoForUpdate(@Param("userId") String userId, @Param("outTradeNo") String outTradeNo);
 
     GroupBuyOrderList queryByPayNo(@Param("payNo") String payNo);
+
+    List<String> queryCompleteOutTradeNoListByTeamId(@Param("teamId") String teamId);
 
     Integer queryUserOrderCount(@Param("activityId") Long activityId, @Param("userId") String userId);
 

@@ -74,6 +74,14 @@
         where pay_no = #{payNo}
     </select>
 
+    <select id="queryCompleteOutTradeNoListByTeamId" resultType="java.lang.String">
+        select out_trade_no
+        from group_buy_order_list
+        where team_id = #{teamId}
+          and status = 1
+        order by id asc
+    </select>
+
     <select id="queryUserOrderCount" resultType="java.lang.Integer">
         select count(id)
         from group_buy_order_list

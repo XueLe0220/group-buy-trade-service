@@ -18,16 +18,23 @@ import cn.xuele.trade.domain.model.valobj.LockTypeEnumVO;
 import cn.xuele.trade.domain.model.valobj.NotifyConfigVO;
 import cn.xuele.trade.domain.model.valobj.NotifyTypeEnumVO;
 import cn.xuele.trade.domain.model.valobj.RefundTypeEnumVO;
+import cn.xuele.trade.domain.model.valobj.TradeEventTypeEnumVO;
 import cn.xuele.trade.domain.model.valobj.TradeOrderStatusEnumVO;
 import cn.xuele.trade.infrastructure.dao.IGroupBuyOrderDao;
 import cn.xuele.trade.infrastructure.dao.IGroupBuyOrderListDao;
+import cn.xuele.trade.infrastructure.dao.ITradeEventOutboxDao;
 import cn.xuele.trade.infrastructure.dao.po.GroupBuyOrder;
 import cn.xuele.trade.infrastructure.dao.po.GroupBuyOrderList;
+import cn.xuele.trade.infrastructure.dao.po.TradeEventOutbox;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -41,12 +48,21 @@ import java.util.UUID;
 @Repository
 public class TradeRepository implements ITradeRepository {
 
+    private static final String TRADE_EVENT_TOPIC = "group-buy.trade.events";
+    private static final int OUTBOX_STATUS_INIT = 0;
+
     private final IGroupBuyOrderDao groupBuyOrderDao;
     private final IGroupBuyOrderListDao groupBuyOrderListDao;
+    private final ITradeEventOutboxDao tradeEventOutboxDao;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public TradeRepository(IGroupBuyOrderDao groupBuyOrderDao, IGroupBuyOrderListDao groupBuyOrderListDao) {
+    public TradeRepository(
+            IGroupBuyOrderDao groupBuyOrderDao,
+            IGroupBuyOrderListDao groupBuyOrderListDao,
+            ITradeEventOutboxDao tradeEventOutboxDao) {
         this.groupBuyOrderDao = groupBuyOrderDao;
         this.groupBuyOrderListDao = groupBuyOrderListDao;
+        this.tradeEventOutboxDao = tradeEventOutboxDao;
     }
 
     @Override
@@ -234,10 +250,13 @@ public class TradeRepository implements ITradeRepository {
         if (updateTeamCount != 1) {
             throw new AppException(ResponseCode.UPDATE_ZERO);
         }
-        groupBuyOrderDao.updateTeamStatusComplete(currentOrder.getTeamId());
+        int updateTeamStatusCount = groupBuyOrderDao.updateTeamStatusComplete(currentOrder.getTeamId());
 
         TradeOrderEntity settledOrder = queryOrderByUserIdAndOutTradeNo(command.getUserId(), command.getOutTradeNo());
         GroupBuyTeamEntity settledTeam = queryTeamByTeamId(currentOrder.getTeamId());
+        if (updateTeamStatusCount == 1) {
+            saveTeamCompletedEvent(settledTeam);
+        }
         return TradeSettlementResultEntity.builder()
                 .order(settledOrder)
                 .team(settledTeam)
@@ -289,7 +308,7 @@ public class TradeRepository implements ITradeRepository {
         }
 
         int updateTeamCount = switch (currentRefundType) {
-            case UNPAID_UNLOCK -> groupBuyOrderDao.updateUnpaidRefund(currentOrder.getTeamId());
+            case UNPAID -> groupBuyOrderDao.updateUnpaidRefund(currentOrder.getTeamId());
             case PAID_UNFORMED -> groupBuyOrderDao.updatePaidUnformedRefund(currentOrder.getTeamId());
             case PAID_FORMED -> groupBuyOrderDao.updatePaidFormedRefund(currentOrder.getTeamId(), targetTeamStatus.getStatus());
         };
@@ -333,6 +352,10 @@ public class TradeRepository implements ITradeRepository {
         return "P" + UUID.randomUUID().toString().replace("-", "").substring(0, 15);
     }
 
+    private String generateEventId() {
+        return "E" + UUID.randomUUID().toString().replace("-", "");
+    }
+
     private GroupBuyTeamStatusEnumVO resolveRefundTargetTeamStatus(RefundTypeEnumVO refundType, GroupBuyTeamEntity team) {
         if (!RefundTypeEnumVO.PAID_FORMED.equals(refundType)) {
             return team.getStatus();
@@ -342,6 +365,49 @@ public class TradeRepository implements ITradeRepository {
             return GroupBuyTeamStatusEnumVO.FAIL;
         }
         return GroupBuyTeamStatusEnumVO.PARTIAL_REFUND;
+    }
+
+    private void saveTeamCompletedEvent(GroupBuyTeamEntity team) {
+        if (team == null || !GroupBuyTeamStatusEnumVO.COMPLETE.equals(team.getStatus())) {
+            return;
+        }
+        TradeEventTypeEnumVO eventType = TradeEventTypeEnumVO.TEAM_COMPLETED;
+        tradeEventOutboxDao.insert(TradeEventOutbox.builder()
+                .eventId(generateEventId())
+                .eventType(eventType.getCode())
+                .aggregateType(eventType.getAggregateType())
+                .aggregateId(team.getTeamId())
+                .bizId(eventType.getCode() + ":" + team.getTeamId())
+                .eventVersion(1)
+                .payloadJson(buildTeamCompletedPayload(team))
+                .topic(TRADE_EVENT_TOPIC)
+                .status(OUTBOX_STATUS_INIT)
+                .retryCount(0)
+                .occurredAt(LocalDateTime.now())
+                .build());
+    }
+
+    private String buildTeamCompletedPayload(GroupBuyTeamEntity team) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("teamId", team.getTeamId());
+        payload.put("activityId", team.getActivityId());
+        payload.put("activityName", team.getActivityName());
+        payload.put("targetCount", team.getTargetCount());
+        payload.put("completeCount", team.getCompleteCount());
+        payload.put("outTradeNoList", groupBuyOrderListDao.queryCompleteOutTradeNoListByTeamId(team.getTeamId()));
+
+        NotifyConfigVO notifyConfig = team.getNotifyConfig();
+        Map<String, Object> notifyConfigPayload = new LinkedHashMap<>();
+        notifyConfigPayload.put("notifyType", notifyConfig == null || notifyConfig.getNotifyType() == null ? null : notifyConfig.getNotifyType().name());
+        notifyConfigPayload.put("notifyUrl", notifyConfig == null ? null : notifyConfig.getNotifyUrl());
+        notifyConfigPayload.put("notifyMQ", notifyConfig == null ? null : notifyConfig.getNotifyMQ());
+        payload.put("notifyConfig", notifyConfigPayload);
+
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (JsonProcessingException e) {
+            throw new AppException(ResponseCode.UN_ERROR.getCode(), "构建成团事件 payload 失败", e);
+        }
     }
 
     private GroupBuyOrder toGroupBuyOrder(GroupBuyTeamEntity team, TradeOrderEntity order) {

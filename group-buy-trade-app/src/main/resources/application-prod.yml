@@ -2,6 +2,13 @@ server:
   port: 8093
 
 spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:124.221.233.121:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
   datasource:
     username: ${TRADE_DB_USERNAME}
     password: ${TRADE_DB_PASSWORD}
@@ -23,3 +30,10 @@ dubbo:
     address: nacos://${NACOS_HOST}:${NACOS_PORT:8848}
   scan:
     base-packages: cn.xuele.trade.trigger.rpc
+
+trade:
+  event:
+    relay:
+      fixed-delay: ${TRADE_EVENT_RELAY_FIXED_DELAY:5000}
+      batch-size: ${TRADE_EVENT_RELAY_BATCH_SIZE:50}
+      max-retry-count: ${TRADE_EVENT_RELAY_MAX_RETRY_COUNT:5}

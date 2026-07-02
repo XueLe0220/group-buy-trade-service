@@ -1,0 +1,91 @@
+services:
+  kafka:
+    image: apache/kafka:3.9.1
+    container_name: xuele-kafka
+    hostname: xuele-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    environment:
+      TZ: Asia/Shanghai
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID:-4L6g3nShT-eMCtK--X86sw}
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:29092,EXTERNAL://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://xuele-kafka:29092,EXTERNAL://124.221.233.121:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@xuele-kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_HEAP_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - ./data:/tmp/kraft-combined-logs
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:29092 --list >/dev/null 2>&1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - xuele-group-buy-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: xuele-kafka-ui
+    hostname: xuele-kafka-ui
+    restart: unless-stopped
+    ports:
+      - "18080:8080"
+    environment:
+      TZ: Asia/Shanghai
+      KAFKA_CLUSTERS_0_NAME: xuele-kafka
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: xuele-kafka:29092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - xuele-group-buy-net
+
+  kafka-init-topics:
+    image: apache/kafka:3.9.1
+    container_name: xuele-kafka-init-topics
+    restart: "no"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        set -e
+
+        TOPIC_NAME="group-buy.trade.events"
+        BOOTSTRAP_SERVER="xuele-kafka:29092"
+
+        if /opt/kafka/bin/kafka-topics.sh --bootstrap-server "$$BOOTSTRAP_SERVER" --list | grep -qx "$$TOPIC_NAME"; then
+          echo "Kafka topic $$TOPIC_NAME already exists."
+        else
+          /opt/kafka/bin/kafka-topics.sh \
+            --bootstrap-server "$$BOOTSTRAP_SERVER" \
+            --create \
+            --topic "$$TOPIC_NAME" \
+            --partitions 3 \
+            --replication-factor 1
+          echo "Kafka topic $$TOPIC_NAME created."
+        fi
+    networks:
+      - xuele-group-buy-net
+
+networks:
+  xuele-group-buy-net:
+    external: true
